@@ -1,0 +1,130 @@
+{% load url from future %}
+<html>
+
+<head>
+    <title>Django Impersonate User List</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap-theme.min.css">
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
+    <script>{% include 'impersonate/jquery.tablesorter.min.js' %}</script>
+
+    <style>
+		.search{
+			float: right;
+		}
+
+	    table.users {
+	        font-size:1.0em;
+	    }
+	    td.date {
+	        white-space: nowrap;
+	    }
+	    .right {
+	        text-align: right;
+	    }
+
+	    div.sort{
+	    	float: right;
+	    }
+
+	    .headerSortDown div.sort:before{
+			content:'\2193';
+	    }
+
+		.headerSortUp div.sort:before{
+			content:'\2191';
+		}
+    </style>
+
+    <script>
+	    $(document).ready(function() {
+	        $(".users").tablesorter({sortList: [[0,0]]});
+
+	        $("#searchInput").keyup(function() {
+				//split the current value of searchInput
+				var data = this.value.split(" ");
+				//create a jquery object of the rows
+				var jo = $(".users tbody").find("tr");
+				if (this.value == "") {
+					jo.show();
+					return;
+				}
+				//hide all the rows
+				jo.hide();
+
+				//Recusively filter the jquery object to get results.
+				jo.filter(function(i, v) {
+					var $t = $(this);
+					for (var d = 0; d < data.length; ++d) {
+						var text = $t.text().toLowerCase()
+
+						if(text.indexOf(data[d]) != -1){
+							return true;
+						};
+					}
+					return false;
+				})
+				//show the rows that match.
+				.show();
+			}).focus(function() {
+				this.value = "";
+				$(this).css({
+					"color": "black"
+				});
+				$(this).unbind('focus');
+			}).css({
+				"color": "#C0C0C0"
+			});
+	    });
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="page-header">
+			<div class="search">
+				Search <input  type="text" id="searchInput">
+        	</div>
+        	<h1>Django Impersonate</h1>
+            <p class="lead">Choose a user to impersonate.</p>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-striped users">
+                    <thead>
+                        <tr>
+                            <th>Username <div class="sort"></div></th>
+                            <th>ID <div class="sort"></div></th>
+                            <th>First Name <div class="sort"></div></th>
+                            <th>Last Name <div class="sort"></div></th>
+                            <th>Email <div class="sort"></div></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.username }}</td>
+                            <td class="right">{{ user.id }}</td>
+                            <td>{{ user.first_name }}</td>
+                            <td>{{ user.last_name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <a href="{% url 'impersonate-start' user.id %}{{redirect}}">
+                                    <button class="btn btn-xs btn-primary">Impersonate</button>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
